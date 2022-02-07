@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shroom.morel.games/questions-catalog.schema.json",
+  "title": "Questions catalog",
+  "description": "A set of questions that can be used for Shroom-compatible games",
+  "type": "object",
+
+  "properties": {},
+
+  "patternProperties": {
+    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$": {
+      "type": "object",
+      "properties": {
+        "lang": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "duration": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            { "type": "null" }
+          ]
+        },
+        "question": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "content": { "$ref": "#/$defs/content" }
+          },
+          "required": ["text"]
+        },
+        "answer": {
+          "type": "object",
+          "oneOf": [
+            { "$ref": "#/$defs/answerText" },
+            { "$ref": "#/$defs/answerChoices" },
+            { "$ref": "#/$defs/answerDrawing" },
+            { "$ref": "#/$defs/answerGeo" }
+          ]
+        },
+        "nsfw": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "lang",
+        "categories",
+        "question",
+        "answer"
+      ]
+    }
+  },
+
+  "additionalProperties": false,
+  
+  "$defs": {
+    "content": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          { "$ref": "#/$defs/contentText" },
+          { "$ref": "#/$defs/contentQuote" },
+          { "$ref": "#/$defs/contentPicture" },
+          { "$ref": "#/$defs/contentMovie" },
+          { "$ref": "#/$defs/contentSound" }
+        ]
+      }
+    },
+
+    "contentText": {
+      "type": "object",
+      "properties": {
+        "type": { "enum": ["text"] },
+        "text": { "type": "string" }
+      },
+      "required": ["type", "text"]
+    },
+
+    "contentQuote": {
+      "type": "object",
+      "properties": {
+        "type": { "enum": ["quote"] },
+        "text": { "type": "string" },
+        "author": { "type": "string" }
+      },
+      "required": ["type", "text"]
+    },
+
+    "contentMediaCommon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "alt": { "type": "string" },
+        "caption": { "type": "string" },
+        "copyright": { "type": "string" },
+        "hide_copyright": { "type": "boolean" }
+      },
+      "required": ["alt"]
+    },
+
+    "contentPicture": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/contentMediaCommon" }],
+      "properties": {
+        "type": { "enum": ["picture"] }
+      },
+      "required": ["type", "name"]
+    },
+
+    "contentMovie": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/contentMediaCommon" }],
+      "properties": {
+        "type": { "enum": ["movie"] },
+        "youtube": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "dailymotion": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "vimeo": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["type"]
+    },
+
+    "contentSound": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/contentMediaCommon" }],
+      "properties": {
+        "type": { "enum": ["sound"] },
+        "soundcloud": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "spotify": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["type"]
+    },
+
+    "answerCommon": {
+      "type": "object",
+      "properties": {
+        "content": { "$ref": "#/$defs/content" },
+        "sources": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "answerText": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/answerCommon" }],
+      "properties": {
+        "type": { "enum": ["text"] },
+        "answer": { "type": "string" }
+      },
+      "required": ["type", "answer"]
+    },
+
+    "answerChoices": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/answerCommon" }],
+      "properties": {
+        "type": { "enum": ["qcm"] },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "answer": { "type": "string" },
+              "valid": { "type": "boolean" }
+            },
+            "required": ["answer"]
+          }
+        },
+        "as_text": { "type": "boolean" }
+      },
+      "required": ["type", "options"]
+    },
+
+    "answerDrawing": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/answerCommon" }],
+      "properties": {
+        "type": { "enum": ["drawing"] }
+      },
+      "required": ["type"]
+    },
+
+    "answerGeo": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/answerCommon" }],
+      "properties": {
+        "type": { "enum": ["geo"] }
+      },
+      "required": ["type"]
+    }
+  }
+}
